@@ -8,6 +8,13 @@ export namespace Utils{
         return bytes;
     }
 
+    export function WriteBytesRange(target:DataView,offset:number,data:Uint8Array):void{        
+        for(let i=0;i<length;i++){                    
+            target.setUint8(offset + i,data[i]);                
+        }        
+    }
+
+
     export function StringFromUint8Array(buffer:Uint8Array):string{
         let result = '';
         for(let i=0;i<buffer.length;i++){
