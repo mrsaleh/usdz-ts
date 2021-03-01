@@ -30,4 +30,21 @@ export namespace Utils{
             source[sourceOffset + i] = dest[destOffset + i];
         }
     }
+
+    
+    export function SendDataToUserDownloads(filename:string,data:Uint8Array){
+        const dataBlob = new Blob([data])    
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(dataBlob)
+        downloadLink.setAttribute('download', filename);    
+        downloadLink.click();
+    }
+
+    export function GetFileExtension(filename:string){
+        const i = filename.lastIndexOf('.')
+        if(i==-1)
+            return ''
+        else
+            return filename.substring(i);
+    }
 }

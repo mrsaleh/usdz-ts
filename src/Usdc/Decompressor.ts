@@ -1,7 +1,6 @@
 import { calcUncompressedLen, uncompressBlock } from "lz4";
-import {ChunkInfo} from 'chunkinfo'
-import {Utils} from 'utils'
-
+import {ChunkInfo} from 'Usdc/ChunkInfo'
+import {Utils} from 'Utils'
 
 export class Decompressor{
     public static ProcessChunk(chunkInfo:ChunkInfo):void{

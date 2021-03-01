@@ -1,12 +1,11 @@
-import {Utils} from 'utils'
-import { UsdcField } from "UsdcField";
-import { calcUncompressedLen, uncompressBlock } from 'lz4'
-import { Decompressor } from "decompressor";
-
+import { Utils } from 'Utils'
+import 'DataViewExtension'
+import { Decompressor } from 'Usdc/Decompressor';
+import { UsdcField } from 'Usdc/Field';
+import { IntegerDecoder } from 'Usdc/IntegerDecoder';
 
 //Parse USDC(USD crate) file format
-export namespace USDC{
-
+export namespace Usdc{
     
     const LZ4_MAX_INPUT_SIZE:number = 0x7E000000;
     const sizeOfInteger:number = 4;
@@ -49,63 +48,6 @@ export namespace USDC{
     {            
         return count > 0 ? (sizeOfInteger) + Math.floor((count * 2 + 7) / 8) + (count * sizeOfInteger) : 0;
     }       
-
-
-    class IntegerDecoder{            
-
-        public static DecodeIntegers(codedBytes:Uint8Array, count:number):Array<number>
-        {
-            const bufferDataView =new DataView(codedBytes.buffer);
-
-            const common = bufferDataView.getInt32(0);
-            const numcodesBytes = Math.floor((count * 2 + 7) / 8);
-            
-            const codesIn = new Uint8Array(numcodesBytes);
-            Utils.CopyByteRange(codedBytes,4,codesIn,0,codesIn.length);
-            const vintsIn = new Uint8Array(codedBytes.length - numcodesBytes - 4);
-            const vintsInDataView = new DataView(vintsIn.buffer);
-            Utils.CopyByteRange(codedBytes,4 + codesIn.length,vintsIn,0,vintsIn.length);
-
-            let vintsOffset = 0;
-            let codeInOffset = 0;
-
-            const results:Array<number> = [];
-
-            let preVal:number = 0;
-            let intsLeft = count;
-
-            while (intsLeft > 0)
-            {
-                const toProcess = Math.min(intsLeft, 4);
-                
-                const codeByte = codesIn[codeInOffset];            
-
-                for (let i = 0; i < count; i++)
-                {
-                    const x = (codeByte & (3 << (2 * i))) >> (2 * i);
-                    if (x == 0) preVal += common;
-                    else if (x == 1){
-                        preVal += vintsInDataView.getInt8(vintsOffset);
-                        vintsOffset += 1;
-                    }
-                    else if (x == 2){
-                        preVal += vintsInDataView.getInt16(vintsOffset);
-                        vintsOffset += 2;
-                    }
-                    else if (x == 4){
-                        preVal += vintsInDataView.getInt32(vintsOffset);
-                        vintsOffset += 4;
-                    }
-                    results.push(preVal);
-                }
-
-                codeInOffset++;
-                intsLeft -= toProcess;
-            }
-
-            return results
-        }        
-    } 
 
 
     export class Section {
@@ -214,7 +156,7 @@ export namespace USDC{
         const compressedBuffer = data.getUint8Array(offset,tokenIndexesSize);
         offset += tokenIndexesSize;
 
-        const workspaceSize = GetCompressedBufferSize(GetEncodedBufferSize(fieldsCount));       
+        const workspaceSize = GetCompressedBufferSize(GetEncodedBufferSize(fieldsCount));               
         const uncompressedBuffer = Decompressor.DecompressFromBuffer(compressedBuffer,workspaceSize);
         const indices = IntegerDecoder.DecodeIntegers(uncompressedBuffer,fieldsCount);
         console.log(fieldsCount)
@@ -282,9 +224,9 @@ export namespace USDC{
     }
 
 
-    export function Parse(filedata:Uint8Array){
+    export function Parse(filedata:ArrayBuffer){
         console.log(filedata)
-        const usdcData = new DataView(filedata.buffer);
+        const usdcData = new DataView(filedata);
         //BootStrap structure.  Appears at start of file, houses version, file
         //identifier string and offset to _TableOfContents.
         let offset = 0;
@@ -307,30 +249,30 @@ export namespace USDC{
         offset += 8;
         const tocOffset = usdcData.getUint64(offset,true) ; //Table of content
         offset +=8;                
-        const sections = USDC.ReadToc(usdcData,tocOffset)
+        const sections = Usdc.ReadToc(usdcData,tocOffset)
         console.log(sections.length);
         console.info('sections',sections);
         for(let i=0;i<sections.length;i++){                    
             const section = sections[i];   
             console.info('section.token',section.token);                 
             if(section.token === 'TOKENS'){
-                console.log("%cParsing TOKENS section",'color:blue');
-                USDC.ReadTokens(usdcData,section.offset,section.size);
+                console.log("%cParsing TOKENS section",'color:blue');                
+                Usdc.ReadTokens(usdcData,section.offset,section.size);
             }else if(section.token === 'STRINGS'){
                 console.log("%cParsing STRINGS section",'color:blue');
-                USDC.ReadStrings(usdcData,section.offset,section.size);
+                Usdc.ReadStrings(usdcData,section.offset,section.size);
             }else if(section.token === 'FIELDS'){                    
                 console.log("%cParsing FIELDS section",'color:blue');    
-                USDC.ReadFields(usdcData,section.offset,section.size);
+                Usdc.ReadFields(usdcData,section.offset,section.size);
             }else if(section.token === 'FIELDSETS'){
                 console.log("%cParsing FIELDSETS section",'color:blue');
-                USDC.ReadFieldSets(usdcData,section.offset,section.size);
+                Usdc.ReadFieldSets(usdcData,section.offset,section.size);
             }else if(section.token === 'PATHS'){
                 console.log("%cParsing PATHS section",'color:blue');
-                USDC.ReadPaths(usdcData,section.offset,section.size);
+                Usdc.ReadPaths(usdcData,section.offset,section.size);
             }else if(section.token === 'SPECS'){
                 console.log("%cParsing SPECS section",'color:blue');
-                USDC.ReadSpecs(usdcData,section.offset,section.size);
+                Usdc.ReadSpecs(usdcData,section.offset,section.size);
             }
             
         }         

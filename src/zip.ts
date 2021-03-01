@@ -1,4 +1,4 @@
-import {Utils} from 'utils'
+import {Utils} from 'Utils'
 
 
 /**
@@ -21,7 +21,7 @@ export namespace Zip{
             this._mLoaded = false;
         }
 
-        private async Load():Promise<void>{
+        public async Load():Promise<void>{
             this._mBytes = await this._mZipFile.arrayBuffer();
             this._mBytesView = new DataView(this._mBytes);
             this._mLoaded = true;
@@ -45,7 +45,7 @@ export namespace Zip{
                     const file = ReadFileRecord(this._mBytesView,offset);
                     records.push(file);
                     offset = this.GotoNextRecord(offset, file);                    
-                }/*else if (sig === EndOfCentralDirectorySignature){
+                }else if (sig === EndOfCentralDirectorySignature){
                     console.warn('Zip.Archive: Now we don\'t support End Of Central Directory record!');
                     break;
                 }else if(sig === CentralDirectorySignature){
@@ -54,7 +54,7 @@ export namespace Zip{
                 }else{
                     console.error('Zip.Archive: Unsupported record!');
                     break;
-                }*/              
+                }              
             }
     
             return records;
@@ -205,14 +205,6 @@ export namespace Zip{
     
     function ReadSignature(data:DataView,offset:number){
         return data.getUint32(offset,true);
-    }
-
-    export function GetFileExtension(filename:string){
-        const i = filename.lastIndexOf('.')
-        if(i==-1)
-            return ''
-        else
-            return filename.substring(i);
-    }
+    }    
 
 }

@@ -1,3 +1,4 @@
+
 export class UsdcField {
     name: string;
     flags: number;
