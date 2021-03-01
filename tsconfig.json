@@ -1,0 +1,28 @@
+{
+  "jsx": "react",
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "outDir": "./dist",
+    "declaration": false,    
+    "lib": [ "dom","ES2020" ],    
+    "target": "ES5",
+    "module": "ESNext",    
+    "inlineSourceMap": false,
+    "strict": true,
+    "allowJs": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noFallthroughCasesInSwitch": true,    
+    "moduleResolution": "node"
+  },
+  "include": [
+    "src/**/*",    
+  ],
+}
