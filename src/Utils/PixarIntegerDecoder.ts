@@ -78,7 +78,7 @@ export class IntegerDecoder{
      * @param second 
      */
     private static IsEqual(first:Array<number>,second:Array<number>) : boolean{
-        Utils.Assert(()=>first.length === second.length);
+        //Utils.Assert(()=>first.length === second.length);
         for(let i=0;i<first.length;i++){
             if(first[i] !== second[i])
                 return false;
@@ -109,7 +109,6 @@ export class IntegerDecoder{
 
         for(let i=0;i<this._mCount;i++){
             const valueType = this.ReadValueType(bitsReader) ;
-            console.log(valueType)
             if(this.IsMostCommonOccurance(valueType)){
                 previousValue.value += mostCommonOccurance;
                 result.push(previousValue.value);
