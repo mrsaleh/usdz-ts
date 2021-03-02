@@ -1,6 +1,6 @@
 import { Usdc as Usdc } from "Usdc/Parser";
-import { Utils } from "Utils";
-import { Zip } from "zip";
+import { Utils } from "Utils/Utils";
+import { Zip } from "Utils/zip";
 
 /**
  * A Usdz file is a simple Zip archive with a usdc file and 

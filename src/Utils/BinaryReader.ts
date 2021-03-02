@@ -1,5 +1,5 @@
 import { Version } from "./Version";
-import {uncompressBlock} from 'lz4'
+import {uncompressBlock} from 'Utils/lz4'
 
 export class BinaryReader{
     private _mData:DataView;    

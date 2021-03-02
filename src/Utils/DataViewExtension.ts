@@ -1,4 +1,4 @@
-import {Utils} from 'Utils'
+import {Utils} from 'Utils/Utils'
 
 declare global {
     //DataView Extension for easier use

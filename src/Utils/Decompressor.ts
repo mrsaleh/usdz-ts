@@ -1,7 +1,4 @@
-import { calcUncompressedLen, uncompressBlock } from "lz4";
-import {ChunkInfo} from 'Usdc/ChunkInfo'
-import {Utils} from 'Utils'
-import { BinaryReader } from "Usdc//BinaryReader";
+import { BinaryReader } from "Utils/BinaryReader";
 import { BinaryWriter } from "./BinaryWriter";
 
 

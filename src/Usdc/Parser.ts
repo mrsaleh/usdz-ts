@@ -1,12 +1,12 @@
-import { Utils } from 'Utils'
-import 'DataViewExtension'
-import { Decompressor } from 'Usdc/Decompressor';
+import { Utils } from 'Utils/Utils'
+import 'Utils/DataViewExtension'
+import { Decompressor } from 'Utils/Decompressor';
 import { UsdcField } from 'Usdc/Field';
-import { IntegerDecoder } from 'Usdc/IntegerDecoder';
+import { IntegerDecoder } from 'Utils/PixarIntegerDecoder';
 import { Section } from 'Usdc/Section';
-import {Helpers} from 'Usdc/Helpers';
-import {Version} from 'Usdc/Version';
-import { BinaryReader } from 'Usdc/BinaryReader';
+import {Helpers} from 'Utils/Helpers';
+import {Version} from 'Utils/Version';
+import { BinaryReader } from 'Utils/BinaryReader';
 
 
 /**

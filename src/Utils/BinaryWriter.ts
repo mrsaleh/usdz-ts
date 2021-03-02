@@ -1,5 +1,5 @@
-import {calcUncompressedLen, compressBlock,uncompressBlock} from 'lz4'
-import { Utils } from 'Utils';
+import {calcUncompressedLen, compressBlock,uncompressBlock} from 'Utils/lz4'
+import { Utils } from 'Utils/Utils';
 
 export class BinaryWriter{
     private _mOffset:number;

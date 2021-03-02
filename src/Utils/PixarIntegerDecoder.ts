@@ -1,89 +1,13 @@
-import { Utils } from "Utils";
+import { Utils } from "Utils/Utils";
 import { BinaryReader } from "./BinaryReader";
 import { Int32, Uint8 } from "./IntegralPrimitives";
+import { BitReader } from "./BitReader";
 
 
-class BitWriter{
-    _mBits:Uint8Array;
-    _mOffset:number;
-
-    constructor(){
-        this._mBits = new Uint8Array();
-        this._mOffset = 0;
-    }
-
-    write(bit:number){
-        if(bit!==0 && bit!==1)
-            throw new Error('Bit value only can be 0 or 1');
-        this._mBits[this._mOffset] = bit;
-        this._mOffset += 1;
-    }
-}
-
-class BitReader{
-    _mSourceBytes:Uint8Array;
-    _mBits:Uint8Array;
-    _mOffset:number;
-
-    constructor(bytes:Uint8Array){
-        this._mSourceBytes = bytes;
-        this._mBits = bytes
-        this._mOffset = 0;
-    }
-
-    Read(){
-        const byteIndex = Math.floor(this._mOffset / 8 );
-        const bitIndex = this._mOffset % 8 ;
-        const byte = this._mSourceBytes[byteIndex];
-        const mask = 1 << bitIndex;        
-        let resultBit = 0;
-        if((byte & mask) === mask)
-            resultBit = 1;            
-        this._mOffset += 1;
-        return resultBit;
-    }        
-
-    ReadMulti(length:number):Uint8Array{
-        const result = new Uint8Array(length);
-        for(let i=0;i<length;i++){
-            result[i] = this.Read();
-        }
-        return result;
-    }
-}
-
-
-function UndefinedGuard<T>(value:T|undefined):T{
+export function UndefinedGuard<T>(value:T|undefined):T{
     if(value === undefined)
         throw new Error('value can not be undefined!')
     return value;
-}
-
-class Optional<T>{
-    private _mValue:T|undefined;
-    private _mHasValue:boolean;
-
-    public get value():T{
-        return UndefinedGuard<T>(this._mValue);        
-    }
-
-    public set value(newValue:T){
-        this._mValue = newValue;
-    }
-
-    public get HasValue():boolean{
-        return this._mHasValue;
-    }
-
-    constructor(value:T|undefined = undefined){
-        if(value !== undefined){
-            this._mValue = value;
-            this._mHasValue = true;    
-        }else{
-            this._mValue = undefined;
-            this._mHasValue = false;
-        }        
-    }
 }
 
 /**
