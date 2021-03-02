@@ -77,39 +77,57 @@ export class Usdc{
     }
 
     ReadFields(size:number){
-        const fieldsCount = this._mReader.GetUint64();
-        const tokenIndexesSize = this._mReader.GetUint64();
-        const compressedBuffer = this._mReader.GetBytes(tokenIndexesSize);
-        console.info('fields count:',fieldsCount);
+        const  indices = this.ExtractIndices();                
 
-        const workspaceSize = Helpers.GetCompressedBufferSize(Helpers.GetEncodedBufferSize(fieldsCount));   
- 
-        console.log(compressedBuffer)
-        const uncompressedBuffer = Decompressor.DecompressFromBuffer(compressedBuffer,workspaceSize);
-        console.log(Array.from(uncompressedBuffer))
-        const indicesDecoder = new IntegerDecoder(uncompressedBuffer,fieldsCount);        
-        const indices = indicesDecoder.DecodeIntegers();
-        console.log(fieldsCount)
-        console.log(indices.length)
-        if(indices.length != fieldsCount)
-            throw new Error('Unexpected field count!');
-        console.info('workspace size:',workspaceSize);                
+
         const repsSize = this._mReader.GetUint64();
         console.info('reps size:',repsSize);
         
-        const compressedBuffer2 = this._mReader.GetBytes(repsSize);
-        const uncompressedBuffer2 = Decompressor.DecompressFromBuffer(compressedBuffer2,fieldsCount * 8);
-        const uncompressedBufferReader = new BinaryReader(uncompressedBuffer2.buffer);        
+
+        const flagsListBytes = this.Decompress(repsSize,indices.length * 8)
+        const flagsListReader = new BinaryReader(flagsListBytes.buffer);        
+        const flagsList = new Array<number>();        
+        for(let i=0;i<indices.length;i++){
+            flagsList.push(flagsListReader.GetUint64());
+        }
         
         const fields = new Array<UsdcField>();
-        for(let i=0;i<fieldsCount;i++){
+        for(let i=0;i<indices.length;i++){
             const field = new UsdcField();
             field.name = this._mTokens[indices[i]];
-            field.flags  = uncompressedBufferReader.GetUint64();
+            field.flags = flagsList[i];
             fields.push(field);            
         }
         
         console.info('UsdcFields',fields);
+    }
+
+    /*
+    private ExtractIndices2(indicesCount: number):Array<number> {
+        const indicesSize = this._mReader.GetUint64();
+        const compressedBuffer = this._mReader.GetBytes(indicesSize);
+        const uncompressedSize = Helpers.GetUncompressedSize(Helpers.GetEncodedBufferSize(indicesCount));
+        const uncompressedBuffer = Decompressor.DecompressFromBuffer(compressedBuffer, uncompressedSize);
+        const indicesDecoder = new IntegerDecoder(uncompressedBuffer, indicesCount);
+        const indices = indicesDecoder.DecodeIntegers();
+        Utils.Assert(() => indices.length == indicesCount);
+        console.log(indices);
+        return indices;
+    }
+    */
+
+    private ExtractIndices(indicesCount:number|undefined = undefined) {
+        if(indicesCount === undefined)
+            indicesCount = this._mReader.GetUint64();
+        const indicesSize = this._mReader.GetUint64();
+        const compressedBuffer = this._mReader.GetBytes(indicesSize);        
+        const uncompressedSize = Helpers.GetUncompressedSize(Helpers.GetEncodedBufferSize(indicesCount));
+        const uncompressedBuffer = Decompressor.DecompressFromBuffer(compressedBuffer, uncompressedSize);
+        const indicesDecoder = new IntegerDecoder(uncompressedBuffer, indicesCount);
+        const indices = indicesDecoder.DecodeIntegers();
+        Utils.Assert(()=>indices.length == indicesCount)            
+        console.log(indices);
+        return  indices ;
     }
 
     private Decompress(compressedSize: number, uncompressedSize: number) {
@@ -131,19 +149,49 @@ export class Usdc{
     }    
 
     ReadFieldSets(size:number){
-        const fieldSetCount = this._mReader.GetUint64();
-        const fieldSetSize = this._mReader.GetUint64();
+        const fieldSetsIndices = this.ExtractIndices();
 
         //TODO : Complete this one
     }
 
     ReadPaths(size:number){
-        const pathCount = this._mReader.GetUint64();
+        const pathesCount = this._mReader.GetUint64();
 
+        // We build up three integer arrays representing the paths:
+        // - pathIndexes[] :
+        //     the index in _paths corresponding to this item.
+        // - elementTokenIndexes[] :
+        //     the element to append to the parent to get this path -- negative
+        //     elements are prim property path elements.
+        // - jumps[] :
+        //     0=only a sibling, -1=only a child, -2=leaf, else has both, positive
+        //     sibling index offset.
+        //
+        // This is vaguely similar to the _PathItemHeader struct used in prior
+        // versions.
+
+        // Write the # of encoded paths.  This can differ from the size of _paths
+        // since we do not write out the empty path.
+
+        const pathesIndices = this.ExtractIndices();
+        console.log(pathesIndices);
+
+        const elementTokenIndexes = this.ExtractIndices(pathesCount);
+
+        const jumps = this.ExtractIndices(pathesCount);
+        
     }
 
-    ReadSpecs(size:number){
+    
 
+    ReadSpecs(size:number){
+        const specsCount = this._mReader.GetUint64();
+
+        const pathIndices = this.ExtractIndices(specsCount);
+
+        const fieldSetIndices = this.ExtractIndices(specsCount);
+
+        const specTypes = this.ExtractIndices(specsCount);
     }
     
 
