@@ -5,8 +5,6 @@ import { BinaryReader } from "Usdc//BinaryReader";
 import { BinaryWriter } from "./BinaryWriter";
 
 
-
-
 export class Decompressor{    
     public static DecompressFromBuffer(compressedBuffer:Uint8Array,workspaceSize:number):Uint8Array{
         const compressedReader = new BinaryReader(compressedBuffer.buffer);

@@ -4,20 +4,34 @@ import {uncompressBlock} from 'lz4'
 export class BinaryReader{
     private _mData:DataView;    
     private _mOffset:number;
+    private _mLittleEndian:boolean;
 
-    constructor(filedata:ArrayBuffer){
+    constructor(filedata:ArrayBuffer,littleEndian:boolean = true){
         this._mOffset = 0;
         this._mData = new DataView(filedata);
+        this._mLittleEndian = littleEndian;
     }
 
     public GetUint64() :number{
-        const value = this._mData.getUint64(this._mOffset, true);
+        const value = this._mData.getUint64(this._mOffset, this._mLittleEndian);
         this._mOffset += 8;
         return value;
     }
 
+    public GetInt8():number{
+        const value = this._mData.getInt8(this._mOffset);
+        this._mOffset += 1;
+        return value;
+    }
+
+    public GetInt16():number{
+        const value = this._mData.getInt16(this._mOffset,this._mLittleEndian);
+        this._mOffset += 1;
+        return value;
+    }
+
     public GetInt32() :number{
-        const value = this._mData.getInt32(this._mOffset, true);
+        const value = this._mData.getInt32(this._mOffset, this._mLittleEndian);
         this._mOffset += 4;
         return value;
     }

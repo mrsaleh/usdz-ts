@@ -41,8 +41,8 @@ export namespace Helpers{
         return count > 0 ? (sizeOfInteger) + Math.floor((count * 2 + 7) / 8) + (count * sizeOfInteger) : 0;
     }    
 
-    export function SplitTokensBufferIntoStrings(buffer:Uint8Array) :Array<String>{
-        const result = new Array<String>();
+    export function SplitTokensBufferIntoStrings(buffer:Uint8Array) :Array<string>{
+        const result = new Array<string>();
         let str = '';
 
         for(let i=0;i<buffer.length;i++){
