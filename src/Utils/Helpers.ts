@@ -12,7 +12,7 @@ export namespace Helpers{
         return size > LZ4_MAX_INPUT_SIZE ? 0 : size + Math.floor(size / 255) + 16;
     }        
     
-    export function GetCompressedBufferSize(inputSize:number):number
+    export function GetUncompressedSize(inputSize:number):number
     {
         if (inputSize > GetMaxInputSize())
         {
