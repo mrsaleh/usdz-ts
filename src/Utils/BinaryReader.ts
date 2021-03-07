@@ -1,4 +1,4 @@
-import { Version } from "./Version";
+import { Version } from "Utils/Version";
 import {uncompressBlock} from 'Utils/lz4'
 
 export class BinaryReader{
@@ -10,6 +10,16 @@ export class BinaryReader{
         this._mOffset = 0;
         this._mData = new DataView(filedata);
         this._mLittleEndian = littleEndian;
+    }
+
+    public IsAtEndOfBuffer(){
+        return (this._mOffset >=this._mData.byteLength);
+    }
+
+    public GetInt64() :number{
+        const value = this._mData.getInt64(this._mOffset, this._mLittleEndian);
+        this._mOffset += 8;
+        return value;
     }
 
     public GetUint64() :number{
@@ -26,7 +36,7 @@ export class BinaryReader{
 
     public GetInt16():number{
         const value = this._mData.getInt16(this._mOffset,this._mLittleEndian);
-        this._mOffset += 1;
+        this._mOffset += 2;
         return value;
     }
 

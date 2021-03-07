@@ -54,4 +54,37 @@ export namespace Utils{
         else
             return filename.substring(i);
     }
+
+    /**
+     * Arrays must have equal length that this function can compare , or 
+     * it will throw an assertion error!
+     * @param first 
+     * @param second 
+     */
+    export function IsEqual(first:Array<number>,second:Array<number>) : boolean{
+        //Utils.Assert(()=>first.length === second.length);
+        if(first.length !== second.length)
+            return false;
+
+        for(let i=0;i<first.length;i++){
+            if(first[i] !== second[i])
+                return false;
+        }
+        return true;
+    }
+
+    export function BitsArrayToInt8Array(bits:Array<number>):Uint8Array{
+        const bytesLength = Math.ceil(bits.length / 8);
+        const bytes = new Uint8Array(bytesLength);
+        for(let i=0;i<bits.length;i++){
+            const byteIndex = Math.floor(i / 8);
+            const bitOffset = i % 8;
+            const bitValue = bits[i];
+            if(bitValue==1)
+                bytes[byteIndex] = bytes[byteIndex] | (bitValue << bitOffset);   
+        }
+
+        return bytes;
+
+    }
 }

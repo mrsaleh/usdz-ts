@@ -1,21 +1,46 @@
 
 export class UsdcField {
-    name: string;
-    flags: number;
-    type: ValueTypeId;
-    isArray: boolean;
-    isInlined: boolean;
-    isCompressed: boolean;
-    payload: number;
+    private _mName: string;
+    private _mFlags: number;
+    private _mType: ValueTypeId;
+    private _mIsArray: boolean;
+    private _mIsInlined: boolean;
+    private _mIsCompressed: boolean;
+    private _mPayload: number;
 
-    constructor(){
-        this.name=''
-        this.flags = 0
-        this.type = ValueTypeId.ValueTypeInvaldOrUnsupported;
-        this.isArray = false;
-        this.isInlined = false;
-        this.isCompressed = false;
-        this.payload  = 0;
+    public get Name():string{
+        return this._mName;
+    }
+
+    public get Type():ValueTypeId{
+        return this._mType;
+    }
+
+    public get IsArray():boolean{
+        return this._mIsArray;
+    }
+
+    public get IsInlined():boolean{
+        return this._mIsInlined;
+    }
+
+    public get IsCompressed():boolean{
+        return this._mIsCompressed;
+    }
+
+    public get Payload():number{
+        return this._mPayload;
+    }
+    
+    constructor(name:string,flags:number){
+        this._mName=name;
+        this._mFlags = flags;
+        //Calculates diffrent properties according to flags            
+        this._mType = (flags >> 48) & 0xff;
+        this._mIsArray = (flags & (1 << 63)) > 0;        
+        this._mIsInlined = (flags & (1 << 62)) > 0;
+        this._mIsCompressed = (flags & (1 << 61)) > 0;
+        this._mPayload  = (flags & (1 << 48) - 1);
     }
 }
 
@@ -79,62 +104,3 @@ export enum ValueTypeId {
     ValueTypeTimeCode = 56
 }
 
-export enum SpecType {
-    SpecTypeUnknown = 0,
-    SpecTypeAttribute,
-    SpecTypeConnection,
-    SpecTypeExpression,
-    SpecTypeMapper,
-    SpecTypeMapperArg,
-    SpecTypePrim,
-    SpecTypePseudoRoot,
-    SpecTypeRelationship,
-    SpecTypeRelationshipTarget,
-    SpecTypeVariant,
-    SpecTypeVariantSet,
-    NumSpecTypes
-}
-
-export enum Orientation {
-    OrientationRightHanded,
-    OrientationLeftHanded
-}
-
-export enum Visibility {
-    VisibilityInherited,
-    VisibilityInvisible
-}
-
-export enum Purpose {
-    PurposeDefault,
-    PurposeRender,
-    PurposeProxy,
-    PurposeGuide
-}
-
-export enum SubdivisionScheme {
-    SubdivisionSchemeCatmullClark,
-    SubdivisionSchemeLoop,
-    SubdivisionSchemeBilinear,
-    SubdivisionSchemeNone
-}
-
-export enum Specifier {
-    SpecifierDef,
-    SpecifierOver,
-    SpecifierClass,
-    NumSpecifiers
-}
-
-export enum Permission {
-    PermissionPublic,
-    PermissionPrivate,
-    NumPermissions
-}
-
-export enum Variability {
-    VariabilityVarying,
-    VariabilityUniform,
-    VariabilityConfig,
-    NumVariabilities
-}

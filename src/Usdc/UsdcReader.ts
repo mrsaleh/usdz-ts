@@ -7,6 +7,7 @@ import { Section } from 'Usdc/Section';
 import {Helpers} from 'Utils/Helpers';
 import {Version} from 'Utils/Version';
 import { BinaryReader } from 'Utils/BinaryReader';
+import { FieldValuePair, LiveFieldSet } from 'Usdc/LiveFieldSet';
 
 
 /**
@@ -20,13 +21,23 @@ import { BinaryReader } from 'Utils/BinaryReader';
  * and parse. Sections data compressed using lz4 compression
  * format.
  */
-export class Usdc{
-    _mReader:BinaryReader;
-    _mTokens:Array<string>
+export class UsdcReader{
+    private _mReader:BinaryReader;
+    private _mTokens:Array<string>;
+    private specsCount :number;
+    private pathIndices :Array<number>;
+    private fieldSetIndices :Array<number>;
+    private specTypes :Array<number>;
+    private fields:Array<UsdcField>;
 
     constructor(filedata:ArrayBuffer){
         this._mReader = new BinaryReader(filedata);
         this._mTokens = [];
+        this.specsCount = 0;
+        this.pathIndices = [];
+        this.fieldSetIndices = [];
+        this.specTypes = [];
+        this.fields = [];
     }
 
     ReadToc():Array<Section>{
@@ -75,10 +86,10 @@ export class Usdc{
         console.info('tokenCount',tokenCount);
         Utils.Assert(()=>this._mTokens.length === tokenCount);
     }
+    
 
     ReadFields(size:number){
         const  indices = this.ExtractIndices();                
-
 
         const repsSize = this._mReader.GetUint64();
         console.info('reps size:',repsSize);
@@ -91,30 +102,17 @@ export class Usdc{
             flagsList.push(flagsListReader.GetUint64());
         }
         
-        const fields = new Array<UsdcField>();
+        this.fields = new Array<UsdcField>();
         for(let i=0;i<indices.length;i++){
-            const field = new UsdcField();
-            field.name = this._mTokens[indices[i]];
-            field.flags = flagsList[i];
-            fields.push(field);            
+            const field = new UsdcField(
+                this._mTokens[indices[i]],
+                flagsList[i]
+            );
+            this.fields.push(field);            
         }
         
-        console.info('UsdcFields',fields);
+        console.info('UsdcFields',this.fields);
     }
-
-    /*
-    private ExtractIndices2(indicesCount: number):Array<number> {
-        const indicesSize = this._mReader.GetUint64();
-        const compressedBuffer = this._mReader.GetBytes(indicesSize);
-        const uncompressedSize = Helpers.GetUncompressedSize(Helpers.GetEncodedBufferSize(indicesCount));
-        const uncompressedBuffer = Decompressor.DecompressFromBuffer(compressedBuffer, uncompressedSize);
-        const indicesDecoder = new IntegerDecoder(uncompressedBuffer, indicesCount);
-        const indices = indicesDecoder.DecodeIntegers();
-        Utils.Assert(() => indices.length == indicesCount);
-        console.log(indices);
-        return indices;
-    }
-    */
 
     private ExtractIndices(indicesCount:number|undefined = undefined) {
         if(indicesCount === undefined)
@@ -184,14 +182,15 @@ export class Usdc{
 
     
 
+
     ReadSpecs(size:number){
-        const specsCount = this._mReader.GetUint64();
+        this.specsCount = this._mReader.GetUint64();
 
-        const pathIndices = this.ExtractIndices(specsCount);
+        this.pathIndices = this.ExtractIndices(this.specsCount);
 
-        const fieldSetIndices = this.ExtractIndices(specsCount);
+        this.fieldSetIndices = this.ExtractIndices(this.specsCount);
 
-        const specTypes = this.ExtractIndices(specsCount);
+        this.specTypes = this.ExtractIndices(this.specsCount);
     }
     
 
@@ -225,7 +224,52 @@ export class Usdc{
                 console.log("%cParsing SPECS section",'color:blue');
                 this.ReadSpecs(section.size);
             }            
-        }         
+        }
+        
+        console.log("%cBuilding Live Field Sets",'color:blue');
+        this.BuildLiveFieldSets();
+    }
+
+    private BuildLiveFieldSets(){
+        console.log
+        const liveFieldSets = new Array<LiveFieldSet>();
+        
+        console.log(this.fieldSetIndices.length)
+
+        // let start = 0;
+        for(let i=0;i<this.fieldSetIndices.length;i++){
+            
+            // console.log(this.fieldSetIndices[i])            
+            // const count = i - start;
+            // console.log(`range size = count`);
+
+            // const liveFieldSet = new LiveFieldSet(start);
+            // for(let j=start;j< start + count;j++){
+            //     const field = this.fields[this.fieldSetIndices[j]];
+            //     const first = field.Name;
+            //     const second = this.UnpackField(field);
+            //     const fieldValuePair = new FieldValuePair(first,second);
+            //     liveFieldSet.FieldValuePairs.push(fieldValuePair);
+            // }
+            // liveFieldSets.push(liveFieldSet);
+
+            // start = i + 1;
+        }
+    }
+
+    private UnpackField(field:UsdcField) :object|null{
+        // TODO : Compelete this code
+        return field.IsInlined ? this.UnpackInlined(field) : this.UnpackNotInlined(field);                            
+    }
+
+    private UnpackInlined(field:UsdcField){
+        console.log(`Inline field: ${field.Type} payload:${field.Payload}`)
+        console.info('field',field);
+        return null;
+    }
+
+    private UnpackNotInlined(field:UsdcField){
+        return null;
     }
 
     private ReadBootstrap() {
@@ -240,7 +284,7 @@ export class Usdc{
             throw new Error("Unsupported usdc writer version, It is too old!");
         
         const tocOffset = this._mReader.GetUint64(); //Table of content
-        this._mReader.Goto(tocOffset);        
+        this._mReader.Goto(tocOffset);
     }
 
 

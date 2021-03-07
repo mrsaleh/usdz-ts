@@ -1,7 +1,8 @@
 import { Utils } from "Utils/Utils";
-import { BinaryReader } from "./BinaryReader";
-import { Int32, Uint8 } from "./IntegralPrimitives";
-import { BitReader } from "./BitReader";
+import { BinaryReader } from "Utils/BinaryReader";
+import { Int16, Int32, Int8, Uint8 } from "Utils/IntegralPrimitives";
+import { BitReader } from "Utils/BitReader";
+import 'Utils/DataViewExtension';
 
 
 export function UndefinedGuard<T>(value:T|undefined):T{
@@ -63,29 +64,13 @@ output = [int32(1) 01 00 00 11 01 00 01 XX int8(123) int32(100000) int8(0) int8(
 Where 'XX' represents unused bits in the last byte of the codes section to round
 up to an even number of bytes.
 
-In this case the output size is 12 bytes compared to the original input which
+In this case the output size is 13 bytes compared to the original input which
 was 28 bytes.  In the best possible case the output is (asymptotically) 2 bits
 per integer (6.25% the original size), in the worst possible case it is
 (asymptotically) 34 bits per integer (106.25% the original size).
 
 */
 export class IntegerDecoder{                
-
-    /**
-     * Arrays must have equal length that this function can compare , or 
-     * it will throw an assertion error!
-     * @param first 
-     * @param second 
-     */
-    private static IsEqual(first:Array<number>,second:Array<number>) : boolean{
-        //Utils.Assert(()=>first.length === second.length);
-        for(let i=0;i<first.length;i++){
-            if(first[i] !== second[i])
-                return false;
-        }
-        return true;
-    }
-
 
     private _mCodedBytes:Uint8Array;
     private _mCount:number;
@@ -98,32 +83,34 @@ export class IntegerDecoder{
     }
 
     public DecodeIntegers():Array<number>
-    {
-        console.info('decoder number count:',this._mCount);
+    {        
         
         const mostCommonOccurance = this.ReadMostCommonOccuranceValue();
+        console.log(`Most COMMON OCCURANCE: ${mostCommonOccurance}`);
+
         const bitsReader = this.InitBitsReader();
-        console.info('Most Common Occurance is :',mostCommonOccurance)
+     
         const result = new Array<number>();
-        const previousValue = new Int32(0);
+        result.push(mostCommonOccurance);
+        //const previousValue = new Int32(0);
 
         for(let i=0;i<this._mCount;i++){
             const valueType = this.ReadValueType(bitsReader) ;
             if(this.IsMostCommonOccurance(valueType)){
-                previousValue.value += mostCommonOccurance;
-                result.push(previousValue.value);
+                //previousValue.value += mostCommonOccurance;
+                result.push(mostCommonOccurance);
             }else if(this.Is8BitsData(valueType)){
-                let int8Value = this._mBytesReader.GetInt8();                
-                previousValue.value += int8Value;
-                result.push(previousValue.value);
+                const int8Value = this._mBytesReader.GetInt8() ;                
+                //previousValue.value += int8Value.value;
+                result.push(int8Value);
             }else if(this.Is16BitsData(valueType)){
-                let int16Value = this._mBytesReader.GetInt16();                                
-                previousValue.value += int16Value;
-                result.push(previousValue.value);
+                const int16Value = this._mBytesReader.GetInt16();                                
+                
+                result.push(int16Value);
             }else if(this.Is32BitsData(valueType)){
-                let int32Value = this._mBytesReader.GetInt32();                
-                previousValue.value += int32Value;
-                result.push(previousValue.value);
+                let int32Value = this._mBytesReader.GetInt32() ;                
+                //previousValue.value +=  int32Value.value;
+                result.push(int32Value);
             }
         }
 
@@ -133,22 +120,22 @@ export class IntegerDecoder{
 
     private Is32BitsData(valueType: number[]) {
         const Data32Bits = [1,1];
-        return IntegerDecoder.IsEqual(valueType, Data32Bits);
+        return Utils.IsEqual(valueType, Data32Bits);
     }
 
     private Is16BitsData(valueType: number[]) {
         const Data16Bits = [1,0];
-        return IntegerDecoder.IsEqual(valueType, Data16Bits);
+        return Utils.IsEqual(valueType, Data16Bits);
     }
 
     private Is8BitsData(valueType: number[]) {
         const Data8Bits = [0,1];
-        return IntegerDecoder.IsEqual(valueType, Data8Bits);
+        return Utils.IsEqual(valueType, Data8Bits);
     }
 
     private IsMostCommonOccurance(valueType: number[]) {
-        const MostCommonOccuranceFlags = [0,0];
-        return IntegerDecoder.IsEqual(valueType, MostCommonOccuranceFlags);
+        const MostCommonOccuranceBits = [0,0];
+        return Utils.IsEqual(valueType, MostCommonOccuranceBits);
     }
 
     private ReadValueType(bitsReader: BitReader) {
